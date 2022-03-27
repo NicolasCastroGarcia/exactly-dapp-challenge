@@ -2,13 +2,17 @@ import type { NextPage } from "next";
 import Head from "next/head";
 
 import ConnectButton from "components/ConnectButton";
-
-import styles from "styles/Home.module.scss";
 import Address from "components/Address";
 import Mint from "components/Mint";
 import TransactionHistory from "components/TransactionHistory";
 
+import styles from "styles/Home.module.scss";
+
+import { useWeb3Context } from "context/web3Context";
+
 const Home: NextPage = () => {
+  const { network } = useWeb3Context();
+
   return (
     <div className={styles.container}>
       <Head>
@@ -18,10 +22,22 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <Address />
         <ConnectButton />
-        <Mint />
-        <TransactionHistory />
+        {network?.name?.toLowerCase() === "kovan" ? (
+          <>
+            <Address />
+            <Mint />
+            <TransactionHistory />
+          </>
+        ) : (
+          network?.name && (
+            <p className={styles.networkText}>
+              You are currently connected to{" "}
+              <strong>{network?.name.toUpperCase()}</strong> <br />
+              This only works on <strong>KOVAN</strong>
+            </p>
+          )
+        )}
       </main>
     </div>
   );
