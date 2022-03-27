@@ -66,7 +66,7 @@ function TransactionHistory() {
           return <Item key={key} entry={entry} />;
         })}
 
-      {!history && <p>Loading...</p>}
+      {!history && address && <p>Loading...</p>}
 
       {history && history.length === 0 && address && (
         <p>No se encontraron transacciones para esta billetera</p>
