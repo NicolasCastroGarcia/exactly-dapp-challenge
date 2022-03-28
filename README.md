@@ -4,6 +4,7 @@ To run execute `npm run dev`
 
 ## Disclaimers & Improvements
 
+- FORGOT TO ADD APPROVAL, WILL ADD LATER
 - The styles are minimal and not implemented fully
 - There are no validations in the amount input
 - You can only mint
