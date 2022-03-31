@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ethers } from "ethers";
 
@@ -6,9 +6,10 @@ import { useWeb3Context } from "context/web3Context";
 
 import Button from "components/Button";
 
-import cDaiAbi from "abis/cDAI.json";
-
 import { transaction } from "types/transaction";
+
+import getContract from "utils/getContract";
+import getContractAddresses from "utils/getContractAddresses";
 
 import styles from "./Mint.module.scss";
 
@@ -19,14 +20,14 @@ function Mint() {
     undefined
   );
 
-  async function handleDeposit() {
-    const signer = await web3Provider?.getSigner();
+  const [allowance, setAllowance] = useState<boolean>(true);
 
-    const contract = new ethers.Contract(
-      "0xF0d0EB522cfa50B716B3b1604C4F0fA6f04376AD",
-      cDaiAbi,
-      signer
-    );
+  useEffect(() => {
+    checkAllowance();
+  }, [address, web3Provider]);
+
+  async function handleDeposit() {
+    const contract = await getContract(web3Provider, "cDai", true);
 
     const tx = await contract.mint(ethers.utils.parseUnits(amount, 18));
 
@@ -35,6 +36,33 @@ function Mint() {
     const txCompleted = await tx.wait();
 
     setTransaction({ status: "COMPLETED", hash: txCompleted.transactionHash });
+  }
+
+  async function handleApprove() {
+    const contract = await getContract(web3Provider, "dai", true);
+
+    await contract.approve(
+      getContractAddresses("cDai"),
+      ethers.utils.parseUnits("99999999999999999")
+    );
+
+    setAllowance(false);
+  }
+
+  async function checkAllowance() {
+    const contract = await getContract(web3Provider, "dai", true);
+
+    const allowance = await contract.allowance(
+      address,
+      getContractAddresses("cDai")
+    );
+
+    const formattedAllowance =
+      allowance && parseFloat(ethers.utils.formatEther(allowance));
+
+    if (formattedAllowance > parseFloat(amount)) {
+      setAllowance(false);
+    }
   }
 
   return (
@@ -51,7 +79,10 @@ function Mint() {
                   setAmount(e.target.value);
                 }}
               />
-              <Button text="Mint" onClick={handleDeposit} />
+              <Button
+                text={allowance ? "Approve" : "Mint"}
+                onClick={allowance ? handleApprove : handleDeposit}
+              />
             </>
           )}
           {transaction && (
