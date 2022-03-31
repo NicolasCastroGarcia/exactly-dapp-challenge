@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 
 import { useWeb3Context } from "context/web3Context";
 
-import cDaiAbi from "abis/cDAI.json";
+import getContract from "utils/getContract";
 
 function Balance() {
   const [balance, setBalance] = useState<string | undefined>(undefined);
@@ -16,11 +16,7 @@ function Balance() {
   }, [web3Provider, address]);
 
   async function getBalance() {
-    const contract = new ethers.Contract(
-      "0xF0d0EB522cfa50B716B3b1604C4F0fA6f04376AD",
-      cDaiAbi,
-      web3Provider
-    );
+    const contract = await getContract(web3Provider, "cDai", false);
 
     const currentBalance = await contract.balanceOf(address);
     const decimals = await contract.decimals();
